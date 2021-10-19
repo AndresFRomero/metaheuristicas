@@ -38,16 +38,15 @@ def objFun(group:set, dM: dict):
 
 def formalElimination(group:set, dM: dict):
     # one single elimination.
-    iniFO = objFun(group, dM)
+    iniFO = 0
     iniGroup = group
 
     for i in group:
-        newGroup = group.difference(set(i))
+        newGroup = group.difference(set([i]))
         newFO = objFun(newGroup, dM)
         if(newFO > iniFO):
             iniGroup = newGroup
             iniFO = newFO
-
     return iniGroup
 
 def randomElimination(group:set):
