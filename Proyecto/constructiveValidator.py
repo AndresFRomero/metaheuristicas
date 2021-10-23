@@ -46,18 +46,18 @@ def loadData(strFile: str):
 # Lista de problemas
 constructive = tpp.tppConstructive()
 
-for subdir, dirs, files in os.walk('./InstanciasLight'):
+for subdir, dirs, files in os.walk('./Instancias'):
     for file in files:
         strFile = os.path.join(subdir, file)
         problem = loadData(strFile)
         marketRoute, whereToBuy, objFun = constructive.main(problem)
 
-        with open('./Soluciones/Ruta_Instancia_' + file.replace("tpp", " txt"), 'w') as fp:
+        with open('./Soluciones/Ruta_Instancia_' + file.replace("AsimSingh.","").replace("tpp", "txt"), 'w') as fp:
             for element in marketRoute:
-                fp.write(str(element)+" ")
+                fp.write(str(element-1)+" ")
         fp.close()
 
-        with open('./Soluciones/Compra_Instancia_' + file.replace("tpp", " txt"), 'w') as fp:
+        with open('./Soluciones/Compra_Instancia_' + file.replace("AsimSingh.","").replace("tpp", "txt"), 'w') as fp:
             for element in whereToBuy:
-                fp.write(str(element)+" ")
+                fp.write(str(element-1)+" ")
         fp.close()
