@@ -63,7 +63,7 @@ class tppConstructive:
         while improvement == True:
             improvement = False
             for i in range(1, n - 1):
-                for j in range(i + 1, n):
+                for j in range(i + 1, n-1):
                     newRoute = self._2optSwap(route, i, j)
                     newCost = self.routeCost(cM, newRoute)
 
@@ -110,7 +110,6 @@ class tppConstructive:
         bestRemove = '-1'
 
         for i in route[1:-1]:
-
             newRoute = route.copy()
             newRoute.remove(i)
 

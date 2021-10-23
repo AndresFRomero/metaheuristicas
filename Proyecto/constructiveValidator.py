@@ -46,11 +46,18 @@ def loadData(strFile: str):
 # Lista de problemas
 constructive = tpp.tppConstructive()
 
-# for subdir, dirs, files in os.walk('./Instancias'):
-#     for file in files:
-#         strFile = os.path.join(subdir, file)
-#         problem = loadData(strFile)
-#         print(constructive.main(problem))
+for subdir, dirs, files in os.walk('./InstanciasLight'):
+    for file in files:
+        strFile = os.path.join(subdir, file)
+        problem = loadData(strFile)
+        marketRoute, whereToBuy, objFun = constructive.main(problem)
 
-problem = loadData('./Instancias/AsimSingh.300.200.1.tpp')
-print(constructive.main(problem))
+        with open('./Soluciones/Ruta_Instancia_' + file.replace("tpp", " txt"), 'w') as fp:
+            for element in marketRoute:
+                fp.write(str(element)+" ")
+        fp.close()
+
+        with open('./Soluciones/Compra_Instancia_' + file.replace("tpp", " txt"), 'w') as fp:
+            for element in whereToBuy:
+                fp.write(str(element)+" ")
+        fp.close()
