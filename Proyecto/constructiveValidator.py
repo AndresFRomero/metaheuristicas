@@ -5,6 +5,8 @@
 # Libraries
 import os
 import constructive as tpp
+import time
+
 # Lectura de Instancias
 def loadData(strFile: str):
     with open(strFile, 'r') as fp:
@@ -50,6 +52,9 @@ for subdir, dirs, files in os.walk('./Instancias'):
     for file in files:
         strFile = os.path.join(subdir, file)
         problem = loadData(strFile)
+
+        start_time = time.time()
+
         marketRoute, whereToBuy, objFun = constructive.main(problem)
 
         with open('./Soluciones/Ruta_Instancia_' + file.replace("AsimSingh.","").replace("tpp", "txt"), 'w') as fp:
@@ -61,3 +66,5 @@ for subdir, dirs, files in os.walk('./Instancias'):
             for element in whereToBuy:
                 fp.write(str(element-1)+" ")
         fp.close()
+
+        print(file, objFun, round(time.time()-start_time,2) )
