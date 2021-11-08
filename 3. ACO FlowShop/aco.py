@@ -2,14 +2,13 @@
 
 # Libraries
 import random
-random.seed(100)
 
 # Parameters
 class AntColonyOptimization:
 
     # ACO configuration
-    ants = 2000     # Ants
-    iterations = 100 # Iters
+    ants = 5     # Ants
+    iterations = 5 # Iters
     alpha = 1.5 # influence parameter
     betha = 1 # convenience parameter
     rho = 0.4    # evaporation rate
