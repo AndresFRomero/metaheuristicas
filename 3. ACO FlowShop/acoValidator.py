@@ -20,12 +20,10 @@ def loadData(file : str):
 
     return problem
 
-for subdir, dirs, files in os.walk('./Tests'):
-    for file in files:
-        ACO = aco.AntColonyOptimization()
-        strFile = os.path.join(subdir, file)
-        problem = loadData(strFile)
-        print(problem)
-        start_time = time.time()
-        route, makespan, deadtime = ACO.main(problem)
-        print(file, makespan, round(time.time()-start_time,2) )
+ACO = aco.AntColonyOptimization()
+
+file = './Tests/tai20_5_010.txt'
+problem = loadData(file)
+start_time = time.time()
+route, makespan, deadtime = ACO.main(problem)
+print(file, makespan, round(time.time()-start_time,2) )

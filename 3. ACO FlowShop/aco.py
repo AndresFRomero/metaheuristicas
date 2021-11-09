@@ -3,22 +3,21 @@
 # Libraries
 import random
 
-# Parameters
 class AntColonyOptimization:
 
     # ACO configuration
-    ants = 5     # Ants
-    iterations = 5 # Iters
-    alpha = 1.5 # influence parameter
-    betha = 1 # convenience parameter
-    rho = 0.4    # evaporation rate
+    ants = 100         # Ants
+    iterations = 500    # Iters
+    alpha = 1.5          # influence parameter
+    betha = 0.5          # convenience parameter
+    rho = 0.25           # evaporation rate
 
     # Parameters
-    tau = {}
-    nu = {}
-    dummyCosts = {}
-    Q = 2000
-    Lks = {} # Real Route Costs
+    tau = {}            # Pheromone
+    nu = {}             # First Influence
+    dummyCosts = {}     # Costs Aproximation
+    Q = 1            # Constant
+    Lks = {}            # Real Route Costs
 
     def makespan_dt(self, sol: list, timeMatrix: dict, machines: list) -> tuple:
 
@@ -140,5 +139,6 @@ class AntColonyOptimization:
         for i in range(self.iterations): #number of iterations
             solutions = self.generateSolutions(jobs)
             self.pheromoneUpdate(solutions, timeMatrix, machines)
-
+    
         return self.bestSolution()
+
