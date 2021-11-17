@@ -35,8 +35,10 @@ def loadData(file : str):
 
 BRKGA = brkga.BRKGA_Knapsack()
 
-file = './Tests/NGCUT/NGCUT1.ins2D'
-problem = loadData(file)
-start_time = time.time()
-sol = BRKGA.main(problem)
-print(file, sol, round(time.time()-start_time,2) )
+file = './Tests/NGCUT/NGCUT2.ins2D'
+
+for _ in range(30):
+    problem = loadData(file)
+    start_time = time.time()
+    sol = BRKGA.main(problem)
+    print(file, sol, round(time.time()-start_time, 5))
