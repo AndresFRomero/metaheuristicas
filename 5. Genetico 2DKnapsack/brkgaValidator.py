@@ -6,25 +6,37 @@ import time
 
 def loadData(file : str):
     with open(file, 'r') as fp:
-        problem = { 'timeMatrix' : {} }
+        problem = { 'width' : 0, 'height': 0, 'numberOfItems':0, 'items': {} }
         n = 1
         for line in fp:
             line = line.rstrip('\n')
-            if n >= 4:
-                times = line.replace("  ", " ").split(" ")
-                for idx, time in enumerate(times):
-                    problem['timeMatrix'][n-3,idx+1] = int(time)
+            if n == 1:
+                problem['numberOfItems'] = int(line)
+            elif n == 2:
+                line = line.split(" ")
+                problem['width'] = int(line[0])
+                problem['height'] = int(line[1])
+            elif (n>=3 and n<= problem['numberOfItems']+2):
+                itemData = line.split(" ")
+                itemData = [ int(i) for i in itemData]
+                problem['items'][itemData[0]] = {
+                    'width': itemData[1],
+                    'height': itemData[2],
+                    'demand': itemData[3],
+                    'copies': itemData[4],
+                    'profit': itemData[5]
+                }
+            else:
+                pass
             n += 1
     fp.close()
-    problem['machines'] = [ i+1 for i in range(5)]
-    problem['jobs'] = set([ i+1 for i in range(20)])
 
     return problem
 
-ACO = brkga.AntColonyOptimization()
+BRKGA = brkga.BRKGA_Knapsack()
 
-file = './Tests/tai20_5_010.txt'
+file = './Tests/NGCUT/NGCUT1.ins2D'
 problem = loadData(file)
 start_time = time.time()
-route, makespan, deadtime = ACO.main(problem)
-print(file, makespan, round(time.time()-start_time,2) )
+sol = BRKGA.main(problem)
+print(file, sol, round(time.time()-start_time,2) )
