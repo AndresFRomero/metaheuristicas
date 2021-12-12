@@ -35,7 +35,7 @@ def loadData(file : str):
 
 BRKGA = brkga.BRKGA_Knapsack()
 
-file = './Tests/NGCUT/NGCUT2.ins2D'
+file = './Tests/NGCUT/NGCUT1.ins2D'
 
 for _ in range(30):
     problem = loadData(file)
