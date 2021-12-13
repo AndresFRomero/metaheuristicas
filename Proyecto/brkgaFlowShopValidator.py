@@ -4,7 +4,7 @@
 
 # Libraries
 import os
-import constructive as tpp
+import brkgaFlowShop as tpp
 import time
 
 # Lectura de Instancias
@@ -48,7 +48,7 @@ def loadData(strFile: str):
 # Lista de problemas
 constructive = tpp.tppConstructive()
 
-for subdir, dirs, files in os.walk('./Instancias'):
+for subdir, dirs, files in os.walk('./InstanciasLight'):
     for file in files:
         strFile = os.path.join(subdir, file)
         problem = loadData(strFile)
