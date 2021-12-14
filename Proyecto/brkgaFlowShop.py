@@ -5,32 +5,19 @@
 import random
 
 class tppConstructive:
-    # Initializate params
-    markets = set()
-    products = list
-    cost_matrix = {}
-    offer_section = {}
 
-    # Ram Costs
-    purchaseCosts = dict()
-    aproxTravelCosts = dict()
-    robustTravelCosts = dict()
-
-    # Best Solution
-    bestRoute = []
-    bestPurchases = []
-    bestObjFun = float('inf')
-    
     def loadData(self, data):
-        self.markets = set([ i+1 for i in range(data['dimension'])])
-        self.products = [ i+1 for i in range(data['products_dimension'])]
-        self.cost_matrix = data['cost_matrix']
-        self.offer_section = data['offer_section']
+        markets = set([ i+1 for i in range(data['dimension'])])
+        products = [ i+1 for i in range(data['products_dimension'])]
+        cost_matrix = data['cost_matrix']
+        offer_section = data['offer_section']
 
-    def aproxTravelCost(self, cM:dict, markets: set):
+        return markets, products, cost_matrix, offer_section
 
-        if tuple(sorted([i for i in markets])) in self.aproxTravelCosts:
-            return self.aproxTravelCosts[tuple(sorted([i for i in markets]))]
+    def aproxTravelCost(self, cM:dict, markets: set, aproxTravelCosts):
+
+        if tuple(sorted([i for i in markets])) in aproxTravelCosts:
+            return aproxTravelCosts[tuple(sorted([i for i in markets]))]
         else:
             suma = 0
             for i in cM:
@@ -38,7 +25,7 @@ class tppConstructive:
                     suma += cM[i]
 
             finalCost =  suma/(len(markets) - 1)  
-            self.aproxTravelCosts[tuple(sorted([i for i in markets])) ] = finalCost
+            aproxTravelCosts[tuple(sorted([i for i in markets])) ] = finalCost
 
             return finalCost
 
@@ -55,15 +42,21 @@ class tppConstructive:
             nearest = float("inf")
             nextnode = "-1"
 
-            for j in unvisited:
-                test = cM[route[-1], j]
-                if test < nearest:
-                    nearest = test
-                    nextnode = j
+            if random.random() < 0.35:
+                randomNode = random.choice(list(unvisited))
+                route.append(randomNode)
+                visited.add(randomNode)
+                unvisited.discard(randomNode)
+            else:
+                for j in unvisited:
+                    test = cM[route[-1], j]
+                    if test < nearest:
+                        nearest = test
+                        nextnode = j
 
-            route.append(nextnode)
-            visited.add(nextnode)
-            unvisited.discard(nextnode)
+                route.append(nextnode)
+                visited.add(nextnode)
+                unvisited.discard(nextnode)
 
         route.append(origin)
         return route
@@ -101,7 +94,7 @@ class tppConstructive:
 
                 route = bestRoute
 
-        return bestRoute
+        return bestRoute, bestCost
 
     def whereToBuy(self, route:list, products:list, cM: dict, offers: dict):
         
@@ -152,10 +145,10 @@ class tppConstructive:
                     
         return bestRoute, bestWhereToBuy, bestFO
 
-    def purchaseCost(self, markets:set, offerSection:dict, products:list):
+    def purchaseCost(self, markets:set, offerSection:dict, products:list, purchaseCosts):
         
-        if tuple(sorted([i for i in markets]))  in self.purchaseCosts:
-            return self.purchaseCosts[tuple(sorted([i for i in markets]))]['cost']
+        if tuple(sorted([i for i in markets]))  in purchaseCosts:
+            return purchaseCosts[tuple(sorted([i for i in markets]))]['cost']
         else:
             costs = { i:[float('inf'),'-1'] for i in products }
 
@@ -166,8 +159,8 @@ class tppConstructive:
                         costs[j][1] = i
             
             finalCosts = sum([ costs[i][0] for i in costs ])
-            self.purchaseCosts[tuple(sorted([i for i in markets]))] = { 'cost': finalCosts, 'where':costs }
-            
+            purchaseCosts[tuple(sorted([i for i in markets]))] = { 'cost': finalCosts, 'where':costs }
+
             return finalCosts
 
     def randomCromosome(self, markets:set):
@@ -188,7 +181,7 @@ class tppConstructive:
 
         return condition
 
-    def cromosomeDecoder(self, cromosome:list, markets:set, products:list, cM:dict, offerSection: dict):
+    def cromosomeDecoder(self, cromosome:list, markets:set, products:list, cM:dict, offerSection: dict, aproxTravelCosts, purchaseCosts):
 
         actualTravelCost = float('inf')
         actualPurchaseCost = float('inf')
@@ -200,13 +193,18 @@ class tppConstructive:
             testSet = marketsVisited.copy()
             testSet.remove(i[1])
 
-            newTravelCost = self.aproxTravelCost(cM, testSet)
+            newTravelCost = self.aproxTravelCost(cM, testSet, aproxTravelCosts)
             posibleRemove = self.posibleRemove(testSet, products, offerSection)
 
             # Decition of decoder
             if posibleRemove:
-                newPurshaseCost = self.purchaseCost(testSet, offerSection, products)
+                newPurshaseCost = self.purchaseCost(testSet, offerSection, products, purchaseCosts)
                 if newPurshaseCost + newTravelCost < actualFO:
+                    marketsVisited.remove(i[1])
+                    actualPurchaseCost = newPurshaseCost
+                    actualTravelCost = newTravelCost
+                    actualFO = actualTravelCost + actualPurchaseCost
+                elif random.random() < 0.2:
                     marketsVisited.remove(i[1])
                     actualPurchaseCost = newPurshaseCost
                     actualTravelCost = newTravelCost
@@ -214,35 +212,68 @@ class tppConstructive:
         
         return marketsVisited
 
-    def createRoute(self, cM:dict, products:list, offers:dict, markets:set):
-        # Nearest Neighboor TSP
-        marketRoute = self.tsp(cM, markets, 1)
-        # 2OPT improvement
-        marketRoute = self.simple2opt(cM, marketRoute)
+    def createRoute(self, cM:dict, products:list, offers:dict, markets:set, tspRoutes, purchaseCosts):
+        bestRoute = []
+        bestCost = float('inf')
+
+        for _ in range(10):
+            # Nearest Neighboor TSP
+            marketRoute = self.tsp(cM, markets, 1)
+
+            if tuple(marketRoute) in tspRoutes:
+                marketRoute = tspRoutes[tuple(marketRoute)]['route']
+                routeCost = tspRoutes[tuple(marketRoute)]['cost']
+            else:
+                # 2OPT improvement
+                marketRoute, routeCost = self.simple2opt(cM, marketRoute)
+                tspRoutes[tuple(marketRoute)] = {
+                    'route': marketRoute,
+                    'cost': routeCost
+                }
+
+            if routeCost < bestCost:
+                bestCost = routeCost
+                bestRoute = marketRoute
         
         whereToBuy = []
         for i in products:
-            whereToBuy.append(self.purchaseCosts[tuple(sorted(markets))]['where'][i][1])
-
-        return marketRoute, whereToBuy
+            whereToBuy.append(purchaseCosts[tuple(sorted(markets))]['where'][i][1])
+        return bestRoute, whereToBuy
 
     def main(self, data):
-        self.loadData(data)
 
-        for _ in range(1000):
-            randCrom = self.randomCromosome(self.markets)
-            marketsVisited = self.cromosomeDecoder(randCrom, self.markets, self.products, self.cost_matrix, self.offer_section)
+        # Initializate params
+        markets = set()
+        products = list
+        cost_matrix = {}
+        offer_section = {}
 
-            route, whereToBuy = self.createRoute(self.cost_matrix, self.products, self.offer_section, marketsVisited)
-            routeCost =  self.routeCost(self.cost_matrix, route)
-            purchaseCost = self.purchaseCosts[tuple(sorted([i for i in marketsVisited]))]['cost']
+        # Ram Costs
+        purchaseCosts = dict()
+        aproxTravelCosts = dict()
+        tspRoutes = dict()
 
-            if routeCost + purchaseCost < self.bestObjFun:
-                self.bestObjFun = routeCost + purchaseCost
-                self.bestRoute = route
-                self.bestPurchases = whereToBuy
+        # Best Solution
+        bestRoute = []
+        bestPurchases = []
+        bestObjFun = float('inf')
 
-        return self.bestRoute, self.bestPurchases, self.bestObjFun
+        markets, products, cost_matrix, offer_section = self.loadData(data)
+
+        for _ in range(200):
+            randCrom = self.randomCromosome(markets)
+            marketsVisited = self.cromosomeDecoder(randCrom, markets, products, cost_matrix, offer_section, aproxTravelCosts, purchaseCosts)
+
+            route, whereToBuy = self.createRoute(cost_matrix, products, offer_section, marketsVisited, tspRoutes, purchaseCosts)
+            routeCost =  self.routeCost(cost_matrix, route)
+            purchaseCost = purchaseCosts[tuple(sorted([i for i in marketsVisited]))]['cost']
+
+            if routeCost + purchaseCost < bestObjFun:
+                bestObjFun = routeCost + purchaseCost
+                bestRoute = route
+                bestPurchases = whereToBuy
+
+        return bestRoute, bestPurchases, bestObjFun
         # ONLY CONSTRUCTIVE - HEURISTIC
 
         # # Nearest Neighboor TSP

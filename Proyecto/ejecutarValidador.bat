@@ -1,1 +1,1 @@
-Validador.exe 10 20 2
+Validador.exe 10 100 2
